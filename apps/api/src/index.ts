@@ -2,7 +2,13 @@ import { createApp } from './app.js'
 import { connectDatabase, disconnectDatabase } from './config/database.js'
 import { env } from './config/env.js'
 
-await connectDatabase(env.MONGODB_URI)
+const mongoUri = env.MONGODB_URI
+
+if (!env.DUMMY_API_MODE && mongoUri) {
+  await connectDatabase(mongoUri)
+} else {
+  console.log('Running API in dummy mode (in-memory data, no database connection).')
+}
 
 const app = createApp()
 
@@ -12,7 +18,9 @@ const server = app.listen(env.API_PORT, () => {
 
 async function shutdown() {
   server.close(async () => {
-    await disconnectDatabase()
+    if (!env.DUMMY_API_MODE && mongoUri) {
+      await disconnectDatabase()
+    }
     process.exit(0)
   })
 }

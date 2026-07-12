@@ -9,8 +9,31 @@ import router from './routes/index.js'
 export function createApp() {
   const app = express()
 
+  const configuredOrigins = (process.env.CORS_ORIGIN ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+
+  const allowedOrigins = new Set<string>([
+    'http://localhost:3000',
+    'http://localhost:3001',
+    ...configuredOrigins,
+  ])
+
   app.use(helmet())
-  app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:3000', credentials: true }))
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.has(origin)) {
+          callback(null, true)
+          return
+        }
+
+        callback(new Error(`Origin ${origin} is not allowed by CORS`))
+      },
+      credentials: true,
+    })
+  )
   app.use(express.json({ limit: '1mb' }))
 
   app.use(router)

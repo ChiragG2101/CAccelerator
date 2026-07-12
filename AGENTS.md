@@ -60,6 +60,14 @@ When multiple options exist, prefer the one that is:
 - After each change: run the smallest meaningful verification.
 - Document assumptions and deferred work in-place (short notes/TODOs).
 
+## Agent Startup Discipline (Every New Run)
+
+- Before writing or changing code, first do:
+  1) Skill fit check (load relevant skills)
+  2) Tooling fit check (reuse existing repo frameworks/patterns first)
+- Prefer the skill `hackathon-skill-tooling-first` for all coding tasks in this hackathon.
+- Enforce a thin robust slice: minimal validation, failure handling, and quick verification on critical path.
+
 ## Escalate Immediately If
 
 - A requested shortcut introduces serious security or data-loss risk.

@@ -16,3 +16,64 @@ export interface Profile {
   theme: ProfileTheme
   customHighlights: string[]
 }
+
+export interface ParsedProfile {
+  title: string
+  yearsExperience: string
+  skills: string[]
+  targetRole: string
+  targetLocation: string
+  confidence: number
+  resumeText?: string
+  linkedinUrl?: string
+}
+
+export interface IngestProfileResponse {
+  userId: string
+  parsedProfile: ParsedProfile
+  profileCompleteness: number
+  source: 'dummy'
+}
+
+export interface JobOpening {
+  id: string
+  title: string
+  company: string
+  location: string
+  mode: 'Remote' | 'Hybrid' | 'Onsite'
+  salaryRange: string
+  postedAt: string
+  applyUrl: string
+  description: string
+  mustHaveSkills: string[]
+}
+
+export interface Recommendation {
+  id: string
+  userId: string
+  jobId: string
+  score: number
+  reasons: string[]
+  keywordGaps: string[]
+  job?: JobOpening
+}
+
+export interface RecommendationsResponse {
+  userId: string
+  recommendations: Recommendation[]
+  source: 'dummy'
+}
+
+export interface TailoredResume {
+  jobId: string
+  headline: string
+  summary: string
+  bullets: string[]
+  keywordsToAdd: string[]
+}
+
+export interface TailorResumeResponse {
+  userId: string
+  tailored: TailoredResume
+  source: 'dummy'
+}
