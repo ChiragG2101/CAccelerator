@@ -4,7 +4,15 @@ const config: Config = {
   content: ['./src/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)', 'Inter', 'system-ui', 'sans-serif'],
+      },
       colors: {
+        base: {
+          0: '#070A13',
+          1: '#0D1324',
+          2: '#151D34',
+        },
         brand: {
           50: '#f5f3ff',
           100: '#ede9fe',
@@ -17,6 +25,13 @@ const config: Config = {
           800: '#5b21b6',
           900: '#4c1d95',
         },
+        success: '#10B981',
+        warning: '#F59E0B',
+        danger: '#F43F5E',
+        info: '#06B6D4',
+      },
+      boxShadow: {
+        soft: '0 10px 30px rgba(2, 8, 23, 0.28)',
       },
     },
   },

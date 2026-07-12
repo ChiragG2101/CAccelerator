@@ -1,9 +1,17 @@
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+
+import { NavBar } from '@/components/NavBar'
 import './globals.css'
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+})
+
 export const metadata: Metadata = {
-  title: 'Role Profiles Platform',
-  description: 'Role-based profiles with customizable presentation per role',
+  title: 'Roles Platform — Find better job matches faster',
+  description: 'Upload your profile once, get relevant role matches, and tailor your resume in one workflow.',
 }
 
 export default function RootLayout({
@@ -13,7 +21,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang='en'>
-      <body className='min-h-screen bg-slate-950 text-slate-100'>{children}</body>
+      <body className={`${inter.variable} min-h-screen bg-base-0 text-slate-100`}>
+        <NavBar />
+        {children}
+      </body>
     </html>
   )
 }
