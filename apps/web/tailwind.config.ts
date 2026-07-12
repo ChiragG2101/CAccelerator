@@ -9,9 +9,9 @@ const config: Config = {
       },
       colors: {
         base: {
-          0: '#070A13',
-          1: '#0D1324',
-          2: '#151D34',
+          0: '#F8FAFC',
+          1: '#FFFFFF',
+          2: '#F1F5F9',
         },
         brand: {
           50: '#f5f3ff',
@@ -31,7 +31,7 @@ const config: Config = {
         info: '#06B6D4',
       },
       boxShadow: {
-        soft: '0 10px 30px rgba(2, 8, 23, 0.28)',
+        soft: '0 10px 30px rgba(15, 23, 42, 0.08)',
       },
     },
   },

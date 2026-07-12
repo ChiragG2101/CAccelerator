@@ -25,11 +25,11 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
     <article className='card'>
       <div className='flex flex-wrap items-start justify-between gap-3'>
         <div>
-          <h2 className='text-xl font-semibold text-slate-50'>{job?.title ?? 'Role unavailable'}</h2>
-          <p className='mt-1 text-sm text-slate-300'>
+          <h2 className='text-xl font-semibold text-slate-900'>{job?.title ?? 'Role unavailable'}</h2>
+          <p className='mt-1 text-sm text-slate-600'>
             {job?.company} • {job?.location} • {job?.mode}
           </p>
-          <p className='mt-1 text-xs text-slate-400'>
+          <p className='mt-1 text-xs text-slate-500'>
             {job?.salaryRange ?? 'Compensation not disclosed'} • Posted {postedAtLabel}
           </p>
         </div>
@@ -38,12 +38,12 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
 
       <div className='mt-4 flex flex-wrap gap-2'>
         {visibleReasons.map((reason) => (
-          <span key={reason} className='rounded-full border border-brand-300/30 bg-brand-500/15 px-3 py-1 text-xs text-brand-100'>
+          <span key={reason} className='rounded-full border border-brand-300/30 bg-brand-50 px-3 py-1 text-xs text-brand-700'>
             {reason}
           </span>
         ))}
         {hiddenReasonCount > 0 ? (
-          <span className='rounded-full border border-slate-600 px-3 py-1 text-xs text-slate-300'>+{hiddenReasonCount} more</span>
+          <span className='rounded-full border border-slate-300 px-3 py-1 text-xs text-slate-600'>+{hiddenReasonCount} more</span>
         ) : null}
       </div>
 
@@ -51,12 +51,12 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
         <p className='text-xs font-semibold uppercase tracking-wide text-amber-200'>Keyword gaps</p>
         <div className='mt-2 flex flex-wrap gap-2'>
           {visibleGaps.map((keyword) => (
-            <span key={keyword} className='rounded-md border border-amber-300/40 bg-amber-400/10 px-2 py-1 text-xs text-amber-100'>
+            <span key={keyword} className='rounded-md border border-amber-300/40 bg-amber-100/60 px-2 py-1 text-xs text-amber-700'>
               {keyword}
             </span>
           ))}
           {hiddenGapCount > 0 ? (
-            <span className='rounded-md border border-slate-600 px-2 py-1 text-xs text-slate-300'>+{hiddenGapCount} more</span>
+            <span className='rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600'>+{hiddenGapCount} more</span>
           ) : null}
         </div>
       </div>
@@ -73,7 +73,7 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
             href={job.applyUrl}
             target='_blank'
             rel='noreferrer'
-            className='rounded-xl border border-slate-600 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-800/80'
+            className='rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-100'
           >
             View job
           </a>

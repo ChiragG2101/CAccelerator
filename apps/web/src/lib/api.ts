@@ -1,6 +1,5 @@
 import type {
   Candidate,
-  CandidatePersona,
   CandidateProfile,
   JobOpening,
   Recommendation,
@@ -38,28 +37,6 @@ export interface CandidateProfilePayload {
   targetRole: string;
   preferredLocations: string[];
   workModes: Array<"remote" | "hybrid" | "onsite">;
-}
-
-export interface PersonaParseResult {
-  source: "resume";
-  persona: CandidatePersona;
-  provenance: Record<string, unknown>;
-}
-
-export async function parseResume(
-  file: File,
-  payload: CandidateProfilePayload,
-): Promise<PersonaParseResult> {
-  const form = new FormData();
-  form.append("resume", file);
-  form.append("targetRole", payload.targetRole);
-  payload.preferredLocations.forEach((location) =>
-    form.append("preferredLocations", location),
-  );
-  payload.workModes.forEach((mode) => form.append("workModes", mode));
-  return parseJsonResponse<PersonaParseResult>(
-    await fetch(`${API_BASE}/v1/parse/resume`, { method: "POST", body: form }),
-  );
 }
 
 
@@ -108,6 +85,19 @@ export async function uploadCandidateResume(
     { method: "POST", headers: authHeaders(token), body: form },
   );
   return parseJsonResponse<CandidateProfile>(response);
+}
+
+export async function discoverJobs(
+  candidateId: string,
+  token?: string | null,
+): Promise<Recommendation[]> {
+  return parseJsonResponse<Recommendation[]>(
+    await fetch(`${API_BASE}/v1/candidates/${encodeURIComponent(candidateId)}/discover`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders(token) },
+      body: JSON.stringify({ limit: 10 }),
+    }),
+  );
 }
 
 interface BackendJob {

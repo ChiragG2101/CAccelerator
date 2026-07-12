@@ -33,37 +33,28 @@ export function ResumeUpload({ file, onFileChange, disabled }: ResumeUploadProps
   }
 
   return (
-    <fieldset className='space-y-4' disabled={disabled}>
-      <legend className='text-sm font-medium text-slate-100'>Resume</legend>
-      <div className='rounded-xl border border-dashed border-slate-600 bg-slate-950/40 p-5'>
-        <input
-          ref={inputRef}
-          type='file'
-          accept='.pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-          className='sr-only'
-          onChange={(event) => selectFile(event.target.files?.[0])}
-        />
-        {file ? (
-          <div className='flex flex-wrap items-center justify-between gap-3'>
-            <div>
-              <p className='text-sm font-medium text-slate-100'>{file.name}</p>
-              <p className='text-xs text-slate-400'>{(file.size / 1024).toFixed(0)} KB · ready to extract</p>
-            </div>
-            <button type='button' className='text-sm text-brand-200 hover:text-brand-100' onClick={() => { onFileChange(null); if (inputRef.current) inputRef.current.value = '' }}>
-              Remove
-            </button>
-          </div>
-        ) : (
-          <div>
-            <p className='text-sm text-slate-200'>Upload your latest PDF or DOCX resume</p>
-            <p className='mt-1 text-xs text-slate-400'>Maximum 5 MB. Your file is used only to build your candidate profile.</p>
-            <button type='button' onClick={() => inputRef.current?.click()} className='mt-4 rounded-lg border border-slate-600 px-3 py-2 text-sm font-medium text-slate-100 hover:bg-slate-800'>
-              Choose resume
-            </button>
-          </div>
-        )}
-        {fileError ? <p className='mt-3 text-xs text-rose-300'>{fileError}</p> : null}
-      </div>
-    </fieldset>
+    <div className='space-y-3'>
+      <label htmlFor='resume' className='block text-sm font-medium text-slate-100'>Resume</label>
+      <input
+        ref={inputRef}
+        id='resume'
+        type='file'
+        accept='.pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        disabled={disabled}
+        onChange={(event) => selectFile(event.target.files?.[0])}
+        className='sr-only'
+      />
+      <button
+        type='button'
+        disabled={disabled}
+        onClick={() => inputRef.current?.click()}
+        className='w-full rounded-xl border border-dashed border-slate-600 bg-slate-950/30 px-5 py-8 text-left transition hover:border-brand-400 disabled:cursor-not-allowed disabled:opacity-60'
+      >
+        <span className='block text-sm font-semibold text-slate-100'>{file?.name ?? 'Choose a PDF or DOCX resume'}</span>
+        <span className='mt-1 block text-xs text-slate-400'>{file ? `${Math.ceil(file.size / 1024)} KB selected` : 'Maximum file size: 5 MB'}</span>
+      </button>
+      {file ? <button type='button' disabled={disabled} onClick={() => onFileChange(null)} className='text-xs font-medium text-slate-300 hover:text-white'>Remove file</button> : null}
+      {fileError ? <p className='text-sm text-red-300'>{fileError}</p> : null}
+    </div>
   )
 }

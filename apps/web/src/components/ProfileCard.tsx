@@ -7,22 +7,22 @@ export function ProfileCard({ profile }: { profile: Profile }) {
       <div className='mb-4 flex items-start justify-between gap-4'>
         <div>
           <h2 className='text-2xl font-semibold'>{profile.name || 'Unnamed user'}</h2>
-          <p className='text-sm text-slate-300'>{profile.email}</p>
+          <p className='text-sm text-slate-600'>{profile.email}</p>
         </div>
         <RoleBadge role={profile.role} />
       </div>
 
-      <p className='text-slate-200'>{profile.bio || 'No bio yet.'}</p>
+      <p className='text-slate-700'>{profile.bio || 'No bio yet.'}</p>
 
       {profile.headline ? <p className='mt-2 text-lg font-medium'>{profile.headline}</p> : null}
 
-      <div className='mt-3 grid gap-2 text-sm text-slate-300'>
+      <div className='mt-3 grid gap-2 text-sm text-slate-600'>
         <div>
-          <span className='font-semibold text-slate-100'>Stand-out trait:</span>{' '}
+          <span className='font-semibold text-slate-800'>Stand-out trait:</span>{' '}
           {profile.theme?.accent?.toUpperCase() || 'Custom'}
         </div>
         <div>
-          <span className='font-semibold text-slate-100'>Role style:</span>{' '}
+          <span className='font-semibold text-slate-800'>Role style:</span>{' '}
           {profile.theme?.style || 'General'}
         </div>
       </div>

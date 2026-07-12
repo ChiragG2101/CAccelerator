@@ -4,32 +4,32 @@
 
 :root {
   --font-sans: 'Inter';
-  --background: #070a13;
-  --surface: #0d1324;
-  --surface-2: #151d34;
-  --foreground: #f8fafc;
-  --foreground-muted: #94a3b8;
-  --border-soft: rgba(148, 163, 184, 0.25);
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --foreground: #0f172a;
+  --foreground-muted: #475569;
+  --border-soft: rgba(15, 23, 42, 0.12);
 }
 
 body {
-  @apply bg-base-0 text-slate-100 antialiased font-sans;
-  background-image: radial-gradient(circle at 20% -10%, rgba(99, 102, 241, 0.15), transparent 40%),
-    radial-gradient(circle at 80% 0%, rgba(6, 182, 212, 0.12), transparent 35%);
+  @apply bg-base-0 text-slate-800 antialiased font-sans;
+  background-image: radial-gradient(circle at 20% -10%, rgba(99, 102, 241, 0.08), transparent 45%),
+    radial-gradient(circle at 80% 0%, rgba(6, 182, 212, 0.06), transparent 40%);
 }
 
 .card {
-  @apply rounded-2xl border border-slate-700/60 bg-base-1/80 p-5 shadow-soft backdrop-blur;
+  @apply rounded-2xl border border-slate-200 bg-base-1 p-5 shadow-soft;
 }
 
 .panel {
-  @apply rounded-3xl border border-slate-700/60 bg-base-1/75 shadow-soft backdrop-blur;
+  @apply rounded-3xl border border-slate-200 bg-base-1 shadow-soft;
 }
 
 .section-title {
-  @apply text-3xl font-semibold tracking-tight text-slate-50 md:text-4xl;
+  @apply text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl;
 }
 
 .eyebrow {
-  @apply inline-flex rounded-full border border-brand-300/35 bg-brand-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-100;
+  @apply inline-flex rounded-full border border-brand-300/55 bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-700;
 }
