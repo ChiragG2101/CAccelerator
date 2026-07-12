@@ -236,6 +236,35 @@ router.post('/ingest/profile/linkup', async (req, res) => {
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to scrape profile with Linkup'
+
+    if (message.includes('LINKUP_API_KEY is not configured')) {
+      const payload = parsed.data
+      const profile = {
+        ...defaultParsedProfile,
+        targetRole: payload.targetRole || defaultParsedProfile.targetRole,
+        targetLocation: payload.location || defaultParsedProfile.targetLocation,
+        linkedinUrl: payload.linkedinUrl,
+      }
+
+      ingestedProfiles.set(payload.userId, profile)
+      const userRecord = await userRepository.upsert({
+        clerkUserId: payload.userId,
+        email: payload.email,
+        username: payload.username,
+        linkedinUrl: payload.linkedinUrl,
+      })
+
+      return res.status(201).json({
+        userId: payload.userId,
+        user: userRecord,
+        parsedProfile: profile,
+        profileCompleteness: 0.7,
+        source: 'dummy-linkup-fallback',
+        harness: 'hermes-linkup',
+        warning: 'LINKUP_API_KEY is not configured. Returned fallback profile without live Linkup scrape.',
+      })
+    }
+
     return res.status(502).json({
       ok: false,
       harness: 'hermes-linkup',
