@@ -3,19 +3,27 @@ import { ProfileCard } from '@/components/ProfileCard'
 
 async function fetchProfiles() {
   const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000'
-  const response = await fetch(`${base}/profiles?isPublic=true`, {
-    cache: 'no-store',
-  })
+  try {
+    const response = await fetch(`${base}/profiles?isPublic=true`, {
+      cache: 'no-store',
+    })
 
-  if (!response.ok) {
-    throw new Error('Could not fetch profiles')
+    if (!response.ok) {
+      return { profiles: [] as Profile[], error: `API error: ${response.status} ${response.statusText}` }
+    }
+
+    const data = (await response.json()) as Profile[]
+    return { profiles: data, error: null }
+  } catch (error) {
+    return {
+      profiles: [] as Profile[],
+      error: error instanceof Error ? error.message : 'Failed to reach API',
+    }
   }
-
-  return (await response.json()) as Profile[]
 }
 
 export default async function HomePage() {
-  const profiles = await fetchProfiles()
+  const { profiles, error } = await fetchProfiles()
 
   return (
     <main className='mx-auto max-w-6xl px-4 py-12'>
@@ -32,7 +40,13 @@ export default async function HomePage() {
         ))}
       </section>
 
-      {profiles.length === 0 ? (
+      {error ? (
+        <p className='mt-8 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-amber-100'>
+          Backend unavailable: {error}
+        </p>
+      ) : null}
+
+      {!error && profiles.length === 0 ? (
         <p className='mt-8 text-slate-400'>No public profiles yet. Seed or create them from the API.</p>
       ) : null}
     </main>
