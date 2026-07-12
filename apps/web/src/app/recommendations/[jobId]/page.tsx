@@ -1,34 +1,33 @@
-import { auth } from '@clerk/nextjs/server'
-
-import { RecommendationDetailClient } from '@/components/RecommendationDetailClient'
-import { StateError } from '@/components/StateError'
-import { getJobById } from '@/lib/api'
+import { RecommendationDetailClient } from "@/components/RecommendationDetailClient";
+import { StateError } from "@/components/StateError";
+import { getJobById } from "@/lib/api";
+import { getApiSession } from "@/lib/server-auth";
 
 interface RecommendationDetailPageProps {
   params: {
-    jobId: string
-  }
+    jobId: string;
+  };
 }
 
-export default async function RecommendationDetailPage({ params }: RecommendationDetailPageProps) {
-  const { userId } = auth()
-
-  if (!userId) {
-    return (
-      <main className='mx-auto max-w-4xl px-4 py-12'>
-        <StateError message='You must be signed in to view role details.' />
-      </main>
-    )
-  }
+export default async function RecommendationDetailPage({
+  params,
+}: RecommendationDetailPageProps) {
+  const session = await getApiSession();
 
   try {
-    const job = await getJobById(params.jobId)
-    return <RecommendationDetailClient userId={userId} job={job} />
+    const job = await getJobById(params.jobId, session.token);
+    return <RecommendationDetailClient userId={session.userId} job={job} />;
   } catch (error) {
     return (
-      <main className='mx-auto max-w-4xl px-4 py-12'>
-        <StateError message={error instanceof Error ? error.message : 'Unable to load job detail.'} />
+      <main className="mx-auto max-w-4xl px-4 py-12">
+        <StateError
+          message={
+            error instanceof Error
+              ? error.message
+              : "Unable to load job detail."
+          }
+        />
       </main>
-    )
+    );
   }
 }

@@ -1,92 +1,206 @@
 import type {
-  IngestProfileResponse,
+  Candidate,
+  CandidateProfile,
   JobOpening,
+  Recommendation,
   RecommendationsResponse,
   TailorResumeResponse,
-} from '@/lib/types'
+} from "@/lib/types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+type ApiEnvelope<T> = T | { data: T; requestId?: string };
+type ApiErrorBody = {
+  error?: { message?: string; code?: string };
+  requestId?: string;
+};
+const authHeaders = (token?: string | null): HeadersInit =>
+  token ? { Authorization: `Bearer ${token}` } : {};
 
 async function parseJsonResponse<T>(response: Response): Promise<T> {
+  const body = (await response.json().catch(() => null)) as
+    | ApiEnvelope<T>
+    | ApiErrorBody
+    | null;
   if (!response.ok) {
-    throw new Error(`API error: ${response.status} ${response.statusText}`)
+    const error = body as ApiErrorBody | null;
+    const detail =
+      error?.error?.message ?? response.statusText ?? "Request failed";
+    throw new Error(
+      `${detail}${error?.requestId ? ` (request ${error.requestId})` : ""}`,
+    );
   }
-
-  return (await response.json()) as T
+  if (body && typeof body === "object" && "data" in body) return body.data;
+  return body as T;
 }
 
-export interface IngestProfilePayload {
-  userId: string
-  email?: string
-  username?: string
-  resumeText?: string
-  linkedinUrl?: string
-  manualSummary?: string
-  targetRole?: string
-  location?: string
+export interface CandidateProfilePayload {
+  targetRole: string;
+  preferredLocations: string[];
+  workModes: Array<"remote" | "hybrid" | "onsite">;
 }
 
-export interface IngestProfileWithLinkupPayload {
-  userId: string
-  linkedinUrl: string
-  targetRole?: string
-  location?: string
+
+export async function resolveCandidate(
+  token?: string | null,
+): Promise<Candidate> {
+  return parseJsonResponse<Candidate>(
+    await fetch(`${API_BASE}/v1/candidates`, {
+      method: "POST",
+      headers: authHeaders(token),
+    }),
+  );
 }
 
-export async function ingestProfile(payload: IngestProfilePayload): Promise<IngestProfileResponse> {
-  const response = await fetch(`${API_BASE}/ingest/profile`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-
-  return parseJsonResponse<IngestProfileResponse>(response)
+export async function saveCandidateProfile(
+  candidateId: string,
+  payload: CandidateProfilePayload,
+  token?: string | null,
+): Promise<CandidateProfile> {
+  const response = await fetch(
+    `${API_BASE}/v1/candidates/${encodeURIComponent(candidateId)}/profile`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...authHeaders(token) },
+      body: JSON.stringify(payload),
+    },
+  );
+  return parseJsonResponse<CandidateProfile>(response);
 }
 
-export async function ingestProfileWithLinkup(
-  payload: IngestProfileWithLinkupPayload
-): Promise<IngestProfileResponse> {
-  const response = await fetch(`${API_BASE}/ingest/profile/linkup`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-
-  return parseJsonResponse<IngestProfileResponse>(response)
+export async function uploadCandidateResume(
+  candidateId: string,
+  file: File,
+  payload: CandidateProfilePayload,
+  token?: string | null,
+): Promise<CandidateProfile> {
+  const form = new FormData();
+  form.append("resume", file);
+  form.append("targetRole", payload.targetRole);
+  payload.preferredLocations.forEach((location) =>
+    form.append("preferredLocations", location),
+  );
+  payload.workModes.forEach((mode) => form.append("workModes", mode));
+  const response = await fetch(
+    `${API_BASE}/v1/candidates/${encodeURIComponent(candidateId)}/resume`,
+    { method: "POST", headers: authHeaders(token), body: form },
+  );
+  return parseJsonResponse<CandidateProfile>(response);
 }
 
-export async function getRecommendations(userId: string): Promise<RecommendationsResponse> {
-  const response = await fetch(`${API_BASE}/recommendations/${encodeURIComponent(userId)}`, {
-    cache: 'no-store',
-  })
-
-  return parseJsonResponse<RecommendationsResponse>(response)
+export async function discoverJobs(
+  candidateId: string,
+  token?: string | null,
+): Promise<Recommendation[]> {
+  return parseJsonResponse<Recommendation[]>(
+    await fetch(`${API_BASE}/v1/candidates/${encodeURIComponent(candidateId)}/discover`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders(token) },
+      body: JSON.stringify({ limit: 10 }),
+    }),
+  );
 }
 
-export async function getJobById(jobId: string): Promise<JobOpening> {
-  const response = await fetch(`${API_BASE}/jobs/${encodeURIComponent(jobId)}`, {
-    cache: 'no-store',
-  })
+interface BackendJob {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  workMode: "remote" | "hybrid" | "onsite" | "unknown";
+  description: string;
+  skills: string[];
+  applyUrl: string;
+}
+const toJobOpening = (job: BackendJob): JobOpening => ({
+  id: job.id,
+  title: job.title,
+  company: job.company,
+  location: job.location,
+  mode:
+    job.workMode === "remote"
+      ? "Remote"
+      : job.workMode === "hybrid"
+        ? "Hybrid"
+        : "Onsite",
+  salaryRange: "Not disclosed",
+  postedAt: "Recently",
+  applyUrl: job.applyUrl,
+  description: job.description,
+  mustHaveSkills: job.skills,
+});
 
-  return parseJsonResponse<JobOpening>(response)
+export async function getRecommendations(
+  userId: string,
+  token?: string | null,
+): Promise<RecommendationsResponse> {
+  const response = await fetch(
+    `${API_BASE}/v1/candidates/${encodeURIComponent(userId)}/recommendations`,
+    { headers: authHeaders(token), cache: "no-store" },
+  );
+  const rows =
+    await parseJsonResponse<
+      Array<{
+        id: string;
+        score: number;
+        reasons: string[];
+        missingSkills: string[];
+        job: BackendJob;
+      }>
+    >(response);
+  const recommendations: Recommendation[] = rows.map((row) => ({
+    id: row.id,
+    userId,
+    jobId: row.job.id,
+    score: row.score,
+    reasons: row.reasons,
+    keywordGaps: row.missingSkills,
+    job: toJobOpening(row.job),
+  }));
+  return { userId, recommendations, source: "api" };
 }
 
-export async function tailorResume(userId: string, jobId: string): Promise<TailorResumeResponse> {
-  const response = await fetch(`${API_BASE}/tailor-resume`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, jobId }),
-  })
-
-  return parseJsonResponse<TailorResumeResponse>(response)
+export async function getJobById(
+  jobId: string,
+  token?: string | null,
+): Promise<JobOpening> {
+  return toJobOpening(
+    await parseJsonResponse<BackendJob>(
+      await fetch(`${API_BASE}/v1/jobs/${encodeURIComponent(jobId)}`, {
+        headers: authHeaders(token),
+        cache: "no-store",
+      }),
+    ),
+  );
 }
 
-export async function trackEvent(userId: string, type: string, metadata?: Record<string, unknown>) {
-  const response = await fetch(`${API_BASE}/events`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, type, metadata }),
-  })
+export async function tailorResume(
+  userId: string,
+  jobId: string,
+  token?: string | null,
+): Promise<TailorResumeResponse> {
+  const response = await fetch(
+    `${API_BASE}/v1/candidates/${encodeURIComponent(userId)}/tailored-resumes`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders(token) },
+      body: JSON.stringify({ jobId }),
+    },
+  );
+  const result = await parseJsonResponse<{
+    output: Omit<TailorResumeResponse["tailored"], "jobId">;
+  }>(response);
+  return { userId, tailored: { ...result.output, jobId }, source: "api" };
+}
 
-  return parseJsonResponse<{ ok: boolean }>(response)
+export async function trackEvent(
+  userId: string,
+  type: string,
+  metadata?: Record<string, unknown>,
+  token?: string | null,
+) {
+  const response = await fetch(`${API_BASE}/v1/events`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
+    body: JSON.stringify({ candidateId: userId, type, metadata }),
+  });
+  return parseJsonResponse<{ ok: boolean }>(response);
 }

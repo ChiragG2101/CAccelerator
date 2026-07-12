@@ -1,121 +1,128 @@
 'use client'
 
-import { useUser } from '@clerk/nextjs'
+import { useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-import { LinkedInInput } from '@/components/LinkedInInput'
+import { CandidatePersonaReview } from '@/components/CandidatePersonaReview'
 import { ResumeUpload } from '@/components/ResumeUpload'
 import { StateError } from '@/components/StateError'
-import { ingestProfile, ingestProfileWithLinkup } from '@/lib/api'
+import { discoverJobs, resolveCandidate, uploadCandidateResume, type CandidateProfilePayload } from '@/lib/api'
+import type { CandidateProfile, WorkMode } from '@/lib/types'
+
+type Progress = 'idle' | 'parsing' | 'review' | 'discovering'
+const modes: Array<{ value: WorkMode; label: string }> = [
+  { value: 'remote', label: 'Remote' },
+  { value: 'hybrid', label: 'Hybrid' },
+  { value: 'onsite', label: 'On-site' },
+]
 
 export default function OnboardingPage() {
-  const { isLoaded, user } = useUser()
+  const { getToken, isLoaded, userId } = useAuth()
   const router = useRouter()
-  const [resumeText, setResumeText] = useState('')
-  const [linkedinUrl, setLinkedinUrl] = useState('')
+  const [file, setFile] = useState<File | null>(null)
   const [targetRole, setTargetRole] = useState('Software Engineer')
   const [location, setLocation] = useState('Remote')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [workModes, setWorkModes] = useState<WorkMode[]>(['remote'])
+  const [consent, setConsent] = useState(false)
+  const [progress, setProgress] = useState<Progress>('idle')
+  const [profile, setProfile] = useState<CandidateProfile | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const userId = user?.id ?? ''
 
-  const canSubmit = Boolean(userId) && Boolean(resumeText.trim() || linkedinUrl.trim())
+  const busy = progress === 'parsing' || progress === 'discovering'
+  const canSubmit = Boolean(isLoaded && userId && file && targetRole.trim() && location.trim() && workModes.length && consent)
+
+  function toggleMode(mode: WorkMode) {
+    setWorkModes((current) => current.includes(mode) ? current.filter((item) => item !== mode) : [...current, mode])
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-
-    if (!canSubmit) {
-      setError('Please add either resume text or a LinkedIn URL.')
+    if (!file || !canSubmit) {
+      setError('Sign in, add a PDF/DOCX resume and preferences, then provide consent.')
       return
     }
 
     try {
-      setIsSubmitting(true)
       setError(null)
-
-      if (!userId) {
-        throw new Error('You must be signed in to continue.')
+      setProgress('parsing')
+      const token = await getToken()
+      if (!token) throw new Error('Your sign-in session expired. Please sign in again.')
+      const candidate = await resolveCandidate(token)
+      const payload: CandidateProfilePayload = {
+        targetRole: targetRole.trim(),
+        preferredLocations: [location.trim()],
+        workModes,
       }
-
-      if (linkedinUrl.trim()) {
-        await ingestProfileWithLinkup({
-          userId,
-          linkedinUrl: linkedinUrl.trim(),
-          targetRole,
-          location,
-        })
-      } else {
-        await ingestProfile({
-          userId,
-          email: user?.primaryEmailAddress?.emailAddress,
-          username: user?.username ?? undefined,
-          resumeText,
-          targetRole,
-          location,
-        })
-      }
-
-      router.push('/recommendations')
+      const savedProfile = await uploadCandidateResume(candidate.id, file, payload, token)
+      setProfile(savedProfile)
+      setProgress('review')
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Unable to analyze profile right now.')
-    } finally {
-      setIsSubmitting(false)
+      setProgress('idle')
+      setError(submitError instanceof Error ? submitError.message : 'Unable to process your resume right now.')
     }
+  }
+
+  async function handleConfirm() {
+    if (!profile) return
+    try {
+      setError(null)
+      setProgress('discovering')
+      const token = await getToken()
+      if (!token) throw new Error('Your sign-in session expired. Please sign in again.')
+      await discoverJobs(profile.candidateId, token)
+      router.push(`/recommendations?candidateId=${encodeURIComponent(profile.candidateId)}`)
+    } catch (discoveryError) {
+      setProgress('review')
+      setError(discoveryError instanceof Error ? discoveryError.message : 'Unable to discover jobs right now.')
+    }
+  }
+
+  if (profile && (progress === 'review' || progress === 'discovering')) {
+    return (
+      <main className='mx-auto max-w-3xl px-4 py-12'>
+        {error ? <div className='mb-4'><StateError message={error} /></div> : null}
+        <CandidatePersonaReview
+          profile={profile}
+          onBack={() => { setProfile(null); setProgress('idle'); setError(null) }}
+          onConfirm={() => void handleConfirm()}
+          isContinuing={progress === 'discovering'}
+        />
+      </main>
+    )
   }
 
   return (
     <main className='mx-auto max-w-3xl px-4 py-12'>
       <header className='mb-8'>
-        <p className='text-xs font-semibold uppercase tracking-wide text-brand-700'>Step 1 of 3</p>
-        <h1 className='mt-2 text-3xl font-semibold tracking-tight text-slate-900'>Tell us about your profile</h1>
-        <p className='mt-3 text-sm text-slate-600'>
-          Add your resume details and target preferences. We’ll use this to generate relevant job matches.
-        </p>
-        {isLoaded && user ? (
-          <p className='mt-2 text-xs text-slate-500'>Signed in as {user.primaryEmailAddress?.emailAddress ?? user.id}</p>
-        ) : null}
+        <p className='text-xs font-semibold uppercase tracking-wide text-brand-200'>Step 1 of 3</p>
+        <h1 className='mt-2 text-3xl font-semibold tracking-tight text-slate-50'>Build your candidate profile</h1>
+        <p className='mt-3 text-sm text-slate-300'>Your parser agent extracts verified profile facts. After review, a separate discovery agent searches and scores matching jobs.</p>
       </header>
 
-      <form onSubmit={handleSubmit} className='space-y-6 rounded-2xl border border-slate-200 bg-white p-6'>
-        <ResumeUpload value={resumeText} onChange={setResumeText} />
-        <LinkedInInput value={linkedinUrl} onChange={setLinkedinUrl} />
-
+      <form onSubmit={handleSubmit} className='space-y-6 rounded-2xl border border-slate-700/70 bg-slate-900/60 p-6'>
+        <ResumeUpload file={file} onFileChange={setFile} disabled={busy} />
         <div className='grid gap-4 md:grid-cols-2'>
-          <div className='space-y-3'>
-            <label htmlFor='targetRole' className='block text-sm font-medium text-slate-800'>
-              Target role
-            </label>
-            <input
-              id='targetRole'
-              value={targetRole}
-              onChange={(event) => setTargetRole(event.target.value)}
-              className='w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/40'
-            />
-          </div>
-
-          <div className='space-y-3'>
-            <label htmlFor='location' className='block text-sm font-medium text-slate-800'>
-              Preferred location
-            </label>
-            <input
-              id='location'
-              value={location}
-              onChange={(event) => setLocation(event.target.value)}
-              className='w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/40'
-            />
-          </div>
+          <label className='space-y-2 text-sm font-medium text-slate-100'>Target role
+            <input value={targetRole} onChange={(event) => setTargetRole(event.target.value)} disabled={busy} className='w-full rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm text-slate-100 outline-none focus:border-brand-400' />
+          </label>
+          <label className='space-y-2 text-sm font-medium text-slate-100'>Preferred location
+            <input value={location} onChange={(event) => setLocation(event.target.value)} disabled={busy} className='w-full rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm text-slate-100 outline-none focus:border-brand-400' />
+          </label>
         </div>
-
+        <fieldset disabled={busy}>
+          <legend className='text-sm font-medium text-slate-100'>Work mode</legend>
+          <div className='mt-3 flex flex-wrap gap-2'>
+            {modes.map((mode) => <button key={mode.value} type='button' aria-pressed={workModes.includes(mode.value)} onClick={() => toggleMode(mode.value)} className={`rounded-full border px-4 py-2 text-sm transition ${workModes.includes(mode.value) ? 'border-brand-400 bg-brand-500/20 text-brand-100' : 'border-slate-600 text-slate-300 hover:bg-slate-800'}`}>{mode.label}</button>)}
+          </div>
+        </fieldset>
+        <label className='flex items-start gap-3 rounded-xl border border-slate-700 bg-slate-950/30 p-4 text-sm text-slate-300'>
+          <input type='checkbox' checked={consent} onChange={(event) => setConsent(event.target.checked)} disabled={busy} className='mt-1 h-4 w-4 accent-indigo-500' />
+          <span>I consent to processing this resume through the dedicated Hermes parser. Raw resume content is not stored.</span>
+        </label>
+        {progress === 'parsing' ? <p className='rounded-xl border border-brand-400/30 bg-brand-500/10 p-4 text-sm font-medium text-brand-100'>Parsing and securely saving your candidate profile…</p> : null}
         {error ? <StateError message={error} /> : null}
-
-        <button
-          type='submit'
-          disabled={!canSubmit || isSubmitting || !isLoaded}
-          className='w-full rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:bg-slate-300'
-        >
-          {isSubmitting ? 'Analyzing profile…' : 'Analyze my profile'}
-        </button>
+        <button type='submit' disabled={!canSubmit || busy} className='w-full rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:bg-slate-600'>{progress === 'parsing' ? 'Analyzing resume…' : 'Analyze my resume'}</button>
       </form>
     </main>
   )
