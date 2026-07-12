@@ -2,7 +2,7 @@
 
 Status: approved direction for planning
 Primary goal: ship a hackathon-ready Career Accelerator while preserving a safe path to production
-Product scope: resume upload or LinkedIn URL via Linkup → Hermes candidate-persona parsing → ranked jobs → job-specific resume tailoring → apply/copy action
+Product scope: resume upload → Hermes candidate-persona parsing → ranked jobs → job-specific resume tailoring → apply/copy action
 Architecture decision: Next.js client + Node/Express API + MongoDB/Mongoose + Hermes-managed AI runtime
 
 Related requirements:
@@ -14,7 +14,7 @@ Related requirements:
 
 ### Must ship for the hackathon
 
-1. Candidate can choose one of two explicit persona-ingestion routes: PDF/DOCX resume upload (with pasted-text recovery) or LinkedIn URL enrichment through Linkup.
+1. Candidate can upload a PDF/DOCX resume, with pasted-text recovery where supported.
 2. Candidate can set target role, location, and work mode.
 3. The production path sends extracted resume content through a real Hermes-managed parsing pipeline and stores a structured candidate persona.
 4. System returns at least 10 ranked jobs with match reasons.
@@ -23,7 +23,7 @@ Related requirements:
 7. The critical flow continues when external job or model providers fail.
 8. All agentic execution is mediated by Hermes.
 9. Basic analytics, request validation, safe error handling, and health checks exist.
-10. Clerk authentication is deferred on the `resume-parser` branch so the two parsing endpoints can be validated independently; authentication is restored before public production launch.
+10. Clerk authentication is deferred on the `resume-parser` branch so resume parsing can be validated independently; authentication is restored before public production launch.
 11. The repository passes lint, tests, and build.
 
 ### Should ship if cheap
@@ -38,7 +38,7 @@ Related requirements:
 
 - Generic agent builder and agent marketplace.
 - User-configurable tools, skills, prompts, or model providers.
-- Direct LinkedIn scraping, browser automation, authenticated-session scraping, and private LinkedIn OAuth ingestion. LinkedIn ingestion is allowed only through the Linkup API using public web results and explicit user consent.
+- LinkedIn profile ingestion, scraping, browser automation, authenticated-session scraping, and private LinkedIn OAuth ingestion.
 - Automated job application and browser autofill.
 - Multi-tenant runtime provisioning.
 - One Hermes container per end-user or per configured agent.
@@ -80,20 +80,16 @@ Boundaries:
 - Hermes is the only agent harness and owns model execution.
 - MongoDB stores product data and AI run metadata, not Hermes internal transcripts or memory.
 - Ranking remains deterministic in the MVP; Hermes enriches parsing and tailoring.
-- External job search and LinkedIn enrichment are behind adapters. Linkup is invoked server-side with `LINKUP_API_KEY`; the browser never receives provider credentials.
+- External job search is behind an adapter. Provider credentials remain server-side and are never exposed to the browser.
 
 ### 2.1 Resume-parser branch API contract
 
-The `resume-parser` branch exposes two explicit backend endpoints for frontend validation before Clerk is resumed:
+The `resume-parser` branch exposes one explicit backend endpoint for frontend validation before Clerk is resumed:
 
 1. `POST /v1/parse/resume`
    - `multipart/form-data` with `resume`, `targetRole`, `preferredLocations`, and `workModes`.
    - Accept PDF/DOCX only, maximum 5 MB, validate MIME and magic bytes, extract text in memory, and pass normalized text to `HermesRuntime.parseCandidate`.
-2. `POST /v1/parse/linkedin`
-   - JSON with `linkedinUrl`, `targetRole`, `preferredLocations`, and `workModes`.
-   - Validate an HTTPS `linkedin.com` profile URL, call Linkup `POST https://api.linkup.so/v1/search` server-side with `depth: "standard"` and `outputType: "sourcedAnswer"`, then send the grounded answer to `HermesRuntime.parseCandidate`.
-
-Both return the same strict `CandidatePersona` envelope plus source/provenance. `LINKUP_API_KEY` remains a server-side environment placeholder. Missing Linkup or Hermes credentials return explicit `503` errors in production; they are never substituted with fabricated remote data. Add rate limiting and Clerk authentication before exposing these endpoints publicly.
+It returns the strict `CandidatePersona` envelope plus extraction and Hermes provenance. Missing Hermes credentials return an explicit `503` in production; remote data is never fabricated. Add rate limiting and Clerk authentication before exposing the endpoint publicly.
 
 ## 3. Hackathon implementation choices that remain production-compatible
 

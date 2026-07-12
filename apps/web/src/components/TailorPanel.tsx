@@ -17,9 +17,12 @@ export function TailorPanel({ tailored }: TailorPanelProps) {
   ].join('\n')
 
   return (
-    <section className='rounded-2xl border border-slate-700/70 bg-slate-900/60 p-6'>
+    <section className='card'>
       <div className='flex flex-wrap items-center justify-between gap-3'>
-        <h2 className='text-xl font-semibold text-slate-50'>Tailored resume output</h2>
+        <div>
+          <h2 className='text-xl font-semibold text-slate-50'>Tailored resume output</h2>
+          <p className='mt-1 text-xs text-slate-400'>Generated for this role. Edit language to match your voice.</p>
+        </div>
         <button
           type='button'
           onClick={() => navigator.clipboard.writeText(allContent)}
@@ -32,12 +35,12 @@ export function TailorPanel({ tailored }: TailorPanelProps) {
       <div className='mt-4 space-y-4 text-sm text-slate-200'>
         <div>
           <p className='text-xs font-semibold uppercase tracking-wide text-brand-200'>Headline</p>
-          <p className='mt-1'>{tailored.headline}</p>
+          <p className='mt-1 rounded-lg border border-slate-700/60 bg-base-2/60 p-3'>{tailored.headline}</p>
         </div>
 
         <div>
           <p className='text-xs font-semibold uppercase tracking-wide text-brand-200'>Summary</p>
-          <p className='mt-1'>{tailored.summary}</p>
+          <p className='mt-1 rounded-lg border border-slate-700/60 bg-base-2/60 p-3'>{tailored.summary}</p>
         </div>
 
         <div>

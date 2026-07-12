@@ -26,9 +26,17 @@ pnpm install
 
 ```bash
 cp .env.example .env
+cp apps/web/.env.local.example apps/web/.env.local
 ```
 
-3) Add your OpenAI API key to `.env`, then start MongoDB
+3) Add your OpenAI API key to `.env`, then set Clerk keys in `apps/web/.env.local`
+
+Required Clerk values:
+
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+
+Then start MongoDB
 
 ```bash
 pnpm run db:up

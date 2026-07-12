@@ -20,7 +20,6 @@ export interface CandidateRecord {
   clerkUserId: string
   email?: string
   displayName?: string
-  status: 'onboarding' | 'ready' | 'disabled'
 }
 
 export interface ProfileRecord extends ProfileInput {

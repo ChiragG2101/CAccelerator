@@ -12,7 +12,7 @@ export interface CareerStore {
   getTailored(candidateId: string, id: string): Promise<{ id: string; output: TailoredOutput; status: string } | null>
 }
 
-const candidateRecord = (doc: any): CandidateRecord => ({ id: String(doc._id), clerkUserId: doc.clerkUserId, email: doc.email, displayName: doc.displayName, status: doc.status })
+const candidateRecord = (doc: any): CandidateRecord => ({ id: String(doc._id), clerkUserId: doc.clerkUserId, email: doc.email, displayName: doc.displayName })
 const profileRecord = (doc: any): ProfileRecord => ({
   id: String(doc._id), candidateId: String(doc.candidateId), targetRole: doc.targetRole,
   preferredLocations: doc.preferredLocations ?? [], workModes: doc.workModes ?? [], source: doc.source,
@@ -29,7 +29,6 @@ export class MongooseCareerStore implements CareerStore {
   async getCandidate(id: string) { const doc = await Candidate.findById(id).lean(); return doc ? candidateRecord(doc) : null }
   async saveProfile(candidateId: string, input: ProfileInput, parsed: ParsedCandidate, status: 'completed' | 'fallback') {
     const doc = await CandidateProfile.findOneAndUpdate({ candidateId }, { ...input, parsed, parseStatus: status, parseVersion: 'v2' }, { new: true, upsert: true })
-    await Candidate.updateOne({ _id: candidateId }, { status: 'ready' })
     return profileRecord(doc)
   }
   async getProfile(candidateId: string) { const doc = await CandidateProfile.findOne({ candidateId }).lean(); return doc ? profileRecord(doc) : null }
@@ -42,7 +41,7 @@ export class MongooseCareerStore implements CareerStore {
 
 export class MemoryCareerStore implements CareerStore {
   private candidates = new Map<string, CandidateRecord>(); private profiles = new Map<string, ProfileRecord>(); private tailored = new Map<string, { candidateId: string; id: string; output: TailoredOutput; status: string }>()
-  async resolveCandidate(identity: { clerkUserId: string; email?: string; displayName?: string }) { let value = [...this.candidates.values()].find((item) => item.clerkUserId === identity.clerkUserId); if (!value) { value = { id: `candidate-${this.candidates.size + 1}`, ...identity, status: 'onboarding' }; this.candidates.set(value.id, value) } return value }
+  async resolveCandidate(identity: { clerkUserId: string; email?: string; displayName?: string }) { let value = [...this.candidates.values()].find((item) => item.clerkUserId === identity.clerkUserId); if (!value) { value = { id: `candidate-${this.candidates.size + 1}`, ...identity }; this.candidates.set(value.id, value) } return value }
   async getCandidate(id: string) { return this.candidates.get(id) ?? null }
   async saveProfile(candidateId: string, input: ProfileInput, parsed: ParsedCandidate, status: 'completed' | 'fallback') { const value = { id: `profile-${candidateId}`, candidateId, ...input, parsed, parseStatus: status, parseVersion: 'v2' } as ProfileRecord; this.profiles.set(candidateId, value); return value }
   async getProfile(candidateId: string) { return this.profiles.get(candidateId) ?? null }

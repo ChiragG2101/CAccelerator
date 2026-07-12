@@ -26,10 +26,8 @@ test('health is public and protected routes fail closed', async () => {
   assert.equal(response.status, 401); assert.equal(response.body.error.code, 'UNAUTHENTICATED')
 })
 
-test('two-source parsing endpoints are explicit and validate before provider calls', async () => {
+test('public resume parsing endpoint validates before provider calls', async () => {
   const app = createApp({ store: new MemoryCareerStore(), authMiddleware: unauthenticated })
-  const linkedIn = await request(app).post('/v1/parse/linkedin').send({ linkedinUrl: 'https://example.com/person', targetRole: 'Engineer', preferredLocations: ['Remote'], workModes: ['remote'] })
-  assert.equal(linkedIn.status, 400); assert.equal(linkedIn.body.error.code, 'VALIDATION_ERROR')
   const resume = await request(app).post('/v1/parse/resume')
     .field('targetRole', 'Engineer').field('preferredLocations', 'Remote').field('workModes', 'remote')
     .attach('resume', Buffer.from('not a resume'), { filename: 'resume.txt', contentType: 'text/plain' })
