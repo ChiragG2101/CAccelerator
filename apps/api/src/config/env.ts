@@ -9,8 +9,8 @@ const envSchema = z.object({
   API_PORT: z.coerce.number().int().positive().default(4000),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
   MONGODB_URI: z.string().min(1).optional(),
-  OPENAI_API_KEY: z.string().min(1).optional(),
-  OPENAI_MODEL: z.string().default('gpt-4.1-mini'),
+  HERMES_API_URL: z.url().default('http://127.0.0.1:8643'),
+  HERMES_API_KEY: z.string().min(1).optional(),
   DUMMY_API_MODE: z.coerce.boolean().default(true),
 })
 

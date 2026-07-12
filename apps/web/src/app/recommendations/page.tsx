@@ -1,6 +1,7 @@
 import { RecommendationsClient } from '@/components/RecommendationsClient'
 import { StateError } from '@/components/StateError'
 import { getRecommendations } from '@/lib/api'
+import { getApiSession } from '@/lib/server-auth'
 
 interface RecommendationsPageProps {
   searchParams?: {
@@ -9,10 +10,11 @@ interface RecommendationsPageProps {
 }
 
 export default async function RecommendationsPage({ searchParams }: RecommendationsPageProps) {
-  const userId = searchParams?.userId || 'demo-user-1'
+  const session = await getApiSession(searchParams?.userId)
+  const userId = session.userId
 
   try {
-    const data = await getRecommendations(userId)
+    const data = await getRecommendations(userId, session.token)
     return <RecommendationsClient userId={userId} recommendations={data.recommendations} />
   } catch (error) {
     return (

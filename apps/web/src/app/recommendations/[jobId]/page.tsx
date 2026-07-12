@@ -1,6 +1,7 @@
 import { RecommendationDetailClient } from '@/components/RecommendationDetailClient'
 import { StateError } from '@/components/StateError'
 import { getJobById } from '@/lib/api'
+import { getApiSession } from '@/lib/server-auth'
 
 interface RecommendationDetailPageProps {
   params: {
@@ -12,10 +13,11 @@ interface RecommendationDetailPageProps {
 }
 
 export default async function RecommendationDetailPage({ params, searchParams }: RecommendationDetailPageProps) {
-  const userId = searchParams?.userId || 'demo-user-1'
+  const session = await getApiSession(searchParams?.userId)
+  const userId = session.userId
 
   try {
-    const job = await getJobById(params.jobId)
+    const job = await getJobById(params.jobId, session.token)
     return <RecommendationDetailClient userId={userId} job={job} />
   } catch (error) {
     return (

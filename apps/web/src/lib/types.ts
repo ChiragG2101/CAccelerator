@@ -17,22 +17,40 @@ export interface Profile {
   customHighlights: string[]
 }
 
-export interface ParsedProfile {
-  title: string
-  yearsExperience: string
-  skills: string[]
-  targetRole: string
-  targetLocation: string
-  confidence: number
-  resumeText?: string
-  linkedinUrl?: string
+
+export type WorkMode = 'remote' | 'hybrid' | 'onsite'
+
+export interface Candidate {
+  id: string
+  clerkUserId: string
+  status: 'onboarding' | 'ready' | 'disabled'
 }
 
-export interface IngestProfileResponse {
-  userId: string
-  parsedProfile: ParsedProfile
-  profileCompleteness: number
-  source: 'dummy'
+export interface CandidatePersona {
+  headline: string
+  summary: string
+  yearsExperience?: number
+  seniority?: string
+  skills: string[]
+  industries: string[]
+  currentRole?: string
+  roles: string[]
+  locations: string[]
+  education: string[]
+  experience: Array<{ company?: string; title: string; startDate?: string; endDate?: string; bullets: string[] }>
+  achievements: string[]
+  preferences: { targetRole: string; preferredLocations: string[]; workModes: WorkMode[] }
+}
+
+export interface CandidateProfile {
+  id: string
+  candidateId: string
+  parsed: CandidatePersona
+  parseStatus: 'completed' | 'fallback'
+  parseVersion: string
+  targetRole?: string
+  preferredLocations: string[]
+  workModes: WorkMode[]
 }
 
 export interface JobOpening {
@@ -61,7 +79,7 @@ export interface Recommendation {
 export interface RecommendationsResponse {
   userId: string
   recommendations: Recommendation[]
-  source: 'dummy'
+  source: 'api'
 }
 
 export interface TailoredResume {
@@ -75,5 +93,5 @@ export interface TailoredResume {
 export interface TailorResumeResponse {
   userId: string
   tailored: TailoredResume
-  source: 'dummy'
+  source: 'api'
 }

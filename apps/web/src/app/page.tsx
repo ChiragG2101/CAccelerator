@@ -26,7 +26,7 @@ export default function HomePage() {
           Share your profile once. Discover relevant jobs. Tailor your resume per role.
         </h1>
         <p className='mt-4 max-w-2xl text-base text-slate-300'>
-          Clean and fast candidate workflow for pilots. Dummy API data is already wired so you can build and demo end-to-end.
+          Turn your experience into explainable job matches, then create an evidence-based resume draft for the role you want.
         </p>
 
         <div className='mt-8 flex flex-wrap gap-3'>

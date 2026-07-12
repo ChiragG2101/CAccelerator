@@ -5,6 +5,7 @@ import { useState } from 'react'
 
 import { StateError } from '@/components/StateError'
 import { TailorPanel } from '@/components/TailorPanel'
+import { useApiSession } from '@/components/AuthShell'
 import { tailorResume, trackEvent } from '@/lib/api'
 import type { JobOpening, TailoredResume } from '@/lib/types'
 
@@ -14,6 +15,7 @@ interface RecommendationDetailClientProps {
 }
 
 export function RecommendationDetailClient({ userId, job }: RecommendationDetailClientProps) {
+  const { getToken } = useApiSession()
   const [isTailoring, setIsTailoring] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [tailored, setTailored] = useState<TailoredResume | null>(null)
@@ -23,10 +25,11 @@ export function RecommendationDetailClient({ userId, job }: RecommendationDetail
       setIsTailoring(true)
       setError(null)
 
-      const result = await tailorResume(userId, job.id)
+      const token = await getToken()
+      const result = await tailorResume(userId, job.id, token)
       setTailored(result.tailored)
 
-      await trackEvent(userId, 'tailor_resume_clicked', { jobId: job.id })
+      await trackEvent(userId, 'tailoring_started', { jobId: job.id }, token)
     } catch (tailorError) {
       setError(tailorError instanceof Error ? tailorError.message : 'Unable to tailor resume right now.')
     } finally {
