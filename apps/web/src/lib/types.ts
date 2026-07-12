@@ -42,7 +42,8 @@ export interface IngestProfileResponse {
   user?: UserRecord
   parsedProfile: ParsedProfile
   profileCompleteness: number
-  source: 'dummy'
+  source: 'dummy' | 'linkup'
+  harness?: 'hermes-linkup'
 }
 
 export interface JobOpening {
@@ -71,7 +72,7 @@ export interface Recommendation {
 export interface RecommendationsResponse {
   userId: string
   recommendations: Recommendation[]
-  source: 'dummy'
+  source: 'dummy' | 'in-memory-foundation' | 'linkup'
 }
 
 export interface TailoredResume {
@@ -85,5 +86,5 @@ export interface TailoredResume {
 export interface TailorResumeResponse {
   userId: string
   tailored: TailoredResume
-  source: 'dummy'
+  source: 'dummy' | 'linkup'
 }

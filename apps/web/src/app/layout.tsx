@@ -22,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang='en'>
-      <body className={`${inter.variable} min-h-screen bg-base-0 text-slate-100`}>
+      <body className={`${inter.variable} min-h-screen bg-base-0 text-slate-800`}>
         <ClerkProvider>
           <NavBar />
           {children}

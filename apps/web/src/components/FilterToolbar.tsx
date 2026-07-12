@@ -31,14 +31,14 @@ export function FilterToolbar({
           onChange={(event) => onKeywordChange(event.target.value)}
           placeholder='Search by role, company, or skill'
           aria-label='Search recommendations'
-          className='w-full rounded-xl border border-slate-700 bg-base-2/70 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
+          className='w-full rounded-xl border border-slate-300 bg-base-2 px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
         />
 
         <select
           value={location}
           onChange={(event) => onLocationChange(event.target.value)}
           aria-label='Filter by location'
-          className='w-full rounded-xl border border-slate-700 bg-base-2/70 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
+          className='w-full rounded-xl border border-slate-300 bg-base-2 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
         >
           {locationOptions.map((option) => (
             <option key={option} value={option}>
@@ -51,7 +51,7 @@ export function FilterToolbar({
           value={mode}
           onChange={(event) => onModeChange(event.target.value)}
           aria-label='Filter by work mode'
-          className='w-full rounded-xl border border-slate-700 bg-base-2/70 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
+          className='w-full rounded-xl border border-slate-300 bg-base-2 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
         >
           {modeOptions.map((option) => (
             <option key={option} value={option}>
@@ -64,7 +64,7 @@ export function FilterToolbar({
           value={sortBy}
           onChange={(event) => onSortByChange(event.target.value)}
           aria-label='Sort recommendations'
-          className='w-full rounded-xl border border-slate-700 bg-base-2/70 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
+          className='w-full rounded-xl border border-slate-300 bg-base-2 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
         >
           <option value='match'>Best match</option>
           <option value='recent'>Most recent</option>

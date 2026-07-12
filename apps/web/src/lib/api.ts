@@ -26,8 +26,27 @@ export interface IngestProfilePayload {
   location?: string
 }
 
+export interface IngestProfileWithLinkupPayload {
+  userId: string
+  linkedinUrl: string
+  targetRole?: string
+  location?: string
+}
+
 export async function ingestProfile(payload: IngestProfilePayload): Promise<IngestProfileResponse> {
   const response = await fetch(`${API_BASE}/ingest/profile`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  return parseJsonResponse<IngestProfileResponse>(response)
+}
+
+export async function ingestProfileWithLinkup(
+  payload: IngestProfileWithLinkupPayload
+): Promise<IngestProfileResponse> {
+  const response = await fetch(`${API_BASE}/ingest/profile/linkup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

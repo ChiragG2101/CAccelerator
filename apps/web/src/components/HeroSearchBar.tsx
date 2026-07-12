@@ -6,17 +6,17 @@ export function HeroSearchBar() {
       <input
         aria-label='Target role'
         placeholder='Role e.g. Software Engineer'
-        className='w-full rounded-xl border border-slate-700 bg-base-2/70 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
+        className='w-full rounded-xl border border-slate-300 bg-base-2 px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
       />
       <input
         aria-label='Preferred location'
         placeholder='Location e.g. Remote, Bengaluru'
-        className='w-full rounded-xl border border-slate-700 bg-base-2/70 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
+        className='w-full rounded-xl border border-slate-300 bg-base-2 px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
       />
       <select
         aria-label='Work mode'
         defaultValue='Remote'
-        className='w-full rounded-xl border border-slate-700 bg-base-2/70 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
+        className='w-full rounded-xl border border-slate-300 bg-base-2 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-500/30'
       >
         <option>Remote</option>
         <option>Hybrid</option>
