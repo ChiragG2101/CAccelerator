@@ -1,22 +1,17 @@
-version: "3.9"
 services:
-  postgres:
-    image: postgres:16
-    container_name: roles-platform-postgres
+  mongodb:
+    image: mongo:8
+    container_name: caccelerator-mongodb
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: roles_platform
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - roles_pg_data:/var/lib/postgresql/data
+      - caccelerator_mongo_data:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 5s
       timeout: 5s
       retries: 10
 
 volumes:
-  roles_pg_data:
+  caccelerator_mongo_data:

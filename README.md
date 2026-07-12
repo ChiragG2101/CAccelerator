@@ -3,23 +3,22 @@
 This is a starter monorepo for:
 
 - Frontend: **Next.js (App Router) + TypeScript + Tailwind CSS**
-- Backend: **Node.js + TypeScript + Express**
-- Database: **PostgreSQL + Prisma ORM**
-
-The profile model is role-driven so each role can have a customized profile layout and styling.
+- Backend: **Node.js + TypeScript + Express + Strands Agents SDK**
+- LLM provider: **OpenAI**
+- Database: **MongoDB + Mongoose ODM**
 
 ## What's inside
 
 - `apps/web` — Next.js frontend with profile pages
-- `apps/api` — Node.js API with role/profile endpoints
-- `docker-compose.yml` — local Postgres database
+- `apps/api` — Express API foundation with MongoDB and Strands/OpenAI configuration
+- `docker-compose.yml` — local MongoDB database
 
 ## Quick Start
 
 1) install dependencies
 
 ```bash
-cd /Users/chirag/roles-platform
+cd /Users/adityagupta/Documents/CAccelerator
 pnpm install
 ```
 
@@ -29,21 +28,13 @@ pnpm install
 cp .env.example .env
 ```
 
-3) start Postgres
+3) Add your OpenAI API key to `.env`, then start MongoDB
 
 ```bash
 pnpm run db:up
 ```
 
-4) generate prisma client + run migrations + seed
-
-```bash
-pnpm --dir apps/api prisma generate
-pnpm run db:migrate
-pnpm run db:seed
-```
-
-5) start both apps
+4) start both apps
 
 ```bash
 pnpm run dev
@@ -51,6 +42,8 @@ pnpm run dev
 
 - frontend: http://localhost:3000
 - backend:  http://localhost:4000
+
+The API currently exposes only `GET /health`. The `apps/api/src/agents` folder contains the generic Strands/OpenAI setup; business agents and routes will be added later.
 
 ## Notes
 
