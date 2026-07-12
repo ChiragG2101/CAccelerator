@@ -24,7 +24,7 @@ export function createApp() {
   app.use(
     cors({
       origin: (origin, callback) => {
-        if (!origin || allowedOrigins.has(origin)) {
+        if (!origin || allowedOrigins.has(origin) || isLocalhostOrigin(origin)) {
           callback(null, true)
           return
         }
@@ -41,4 +41,13 @@ export function createApp() {
   app.use(errorMiddleware)
 
   return app
+}
+
+function isLocalhostOrigin(origin: string): boolean {
+  try {
+    const parsed = new URL(origin)
+    return parsed.protocol === 'http:' && parsed.hostname === 'localhost'
+  } catch {
+    return false
+  }
 }
