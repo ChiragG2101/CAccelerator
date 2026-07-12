@@ -28,8 +28,18 @@ export interface ParsedProfile {
   linkedinUrl?: string
 }
 
+export interface UserRecord {
+  clerkUserId: string
+  email?: string
+  username?: string
+  linkedinUrl?: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface IngestProfileResponse {
   userId: string
+  user?: UserRecord
   parsedProfile: ParsedProfile
   profileCompleteness: number
   source: 'dummy'
