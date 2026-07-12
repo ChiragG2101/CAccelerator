@@ -1,0 +1,25 @@
+# Node & lockfiles
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+
+# TypeScript
+*.tsbuildinfo
+
+dist/
+
+db/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store

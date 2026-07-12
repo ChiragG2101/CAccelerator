@@ -1,0 +1,31 @@
+{
+  "name": "@roles/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "lint": "echo 'No lint rules configured yet'",
+    "prisma": "prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "5.21.1",
+    "cors": "2.8.5",
+    "dotenv": "16.5.0",
+    "express": "4.21.1",
+    "helmet": "7.1.0",
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@types/cors": "2.8.17",
+    "@types/express": "5.0.0",
+    "@types/node": "22.12.0",
+    "prisma": "5.21.1",
+    "tsx": "4.19.2",
+    "typescript": "5.8.3"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
+}
