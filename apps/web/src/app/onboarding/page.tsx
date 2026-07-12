@@ -40,8 +40,8 @@ export default function OnboardingPage() {
 
       await ingestProfile({
         userId,
-        email: user.primaryEmailAddress?.emailAddress,
-        username: user.username ?? undefined,
+        email: user?.primaryEmailAddress?.emailAddress,
+        username: user?.username ?? undefined,
         resumeText,
         linkedinUrl: linkedinUrl || undefined,
         targetRole,
