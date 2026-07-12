@@ -10,14 +10,16 @@ import {
 import { InMemoryJobOpeningRepository } from '../repositories/jobOpeningRepository.js'
 import { InMemoryRecommendationRepository } from '../repositories/recommendationRepository.js'
 import { DiscoveryService } from '../services/discovery/discoveryService.js'
+import { HttpLinkupClient } from '../services/discovery/linkupClient.js'
 import { RecommendationService } from '../services/recommendation/recommendationService.js'
 
 const router = Router()
 
 const jobsRepository = new InMemoryJobOpeningRepository()
 const recommendationRepository = new InMemoryRecommendationRepository()
+const linkupClient = new HttpLinkupClient()
 const recommendationService = new RecommendationService(jobsRepository, recommendationRepository)
-const discoveryService = new DiscoveryService(jobsRepository)
+const discoveryService = new DiscoveryService(jobsRepository, linkupClient)
 
 jobsRepository.seed(dummyJobs)
 
@@ -71,6 +73,19 @@ const discoveryPlanSchema = z.object({
   atsPlatforms: z.array(z.string().min(1)).optional(),
 })
 
+const discoveryRunSchema = discoveryPlanSchema.extend({
+  runId: z.string().min(1).optional(),
+  maxQueries: z.coerce.number().int().min(1).max(20).optional(),
+  maxResultsPerQuery: z.coerce.number().int().min(1).max(20).optional(),
+})
+
+const linkupProfileSchema = z.object({
+  userId: z.string().min(2).default('demo-user-1'),
+  linkedinUrl: z.string().url(),
+  targetRole: z.string().optional(),
+  location: z.string().optional(),
+})
+
 type IngestPayload = z.infer<typeof ingestSchema>
 type TailorPayload = z.infer<typeof tailorSchema>
 
@@ -121,6 +136,28 @@ router.post('/discovery/plan', (req, res) => {
   })
 })
 
+router.post('/discovery/run', async (req, res) => {
+  const parsed = discoveryRunSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() })
+  }
+
+  try {
+    const result = await discoveryService.runDiscoveryWithLinkup(parsed.data)
+    return res.status(202).json({
+      ok: true,
+      ...result,
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to run Linkup discovery'
+    return res.status(502).json({
+      ok: false,
+      harness: 'hermes-linkup',
+      error: message,
+    })
+  }
+})
+
 router.post('/ingest/profile', (req, res) => {
   const parsed = ingestSchema.safeParse(req.body)
   if (!parsed.success) {
@@ -144,6 +181,47 @@ router.post('/ingest/profile', (req, res) => {
     profileCompleteness: profile.resumeText || profile.linkedinUrl ? 0.86 : 0.62,
     source: 'dummy',
   })
+})
+
+router.post('/ingest/profile/linkup', async (req, res) => {
+  const parsed = linkupProfileSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() })
+  }
+
+  try {
+    const payload = parsed.data
+    const scraped = await discoveryService.scrapeProfileWithLinkup({
+      linkedinUrl: payload.linkedinUrl,
+      targetRole: payload.targetRole,
+      location: payload.location,
+    })
+
+    const profile = {
+      ...defaultParsedProfile,
+      ...scraped,
+      targetRole: payload.targetRole || scraped.targetRole || defaultParsedProfile.targetRole,
+      targetLocation: payload.location || scraped.targetLocation || defaultParsedProfile.targetLocation,
+      linkedinUrl: payload.linkedinUrl,
+    }
+
+    ingestedProfiles.set(payload.userId, profile)
+
+    return res.status(201).json({
+      userId: payload.userId,
+      parsedProfile: profile,
+      profileCompleteness: profile.skills.length > 0 ? 0.9 : 0.7,
+      source: 'linkup',
+      harness: 'hermes-linkup',
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to scrape profile with Linkup'
+    return res.status(502).json({
+      ok: false,
+      harness: 'hermes-linkup',
+      error: message,
+    })
+  }
 })
 
 router.get('/recommendations/:userId', async (req, res) => {

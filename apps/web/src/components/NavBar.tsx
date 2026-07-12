@@ -1,7 +1,10 @@
+'use client'
+
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 
 const navLinks = [
-  { label: 'Find Jobs', href: '/recommendations?userId=demo-user-1' },
+  { label: 'Find Jobs', href: '/recommendations' },
   { label: 'How it works', href: '/' },
   { label: 'For Employers', href: '/' },
 ]
@@ -23,18 +26,34 @@ export function NavBar() {
         </nav>
 
         <div className='flex items-center gap-2'>
-          <button
-            type='button'
-            className='rounded-xl border border-slate-600 px-3 py-2 text-xs font-medium text-slate-200 transition hover:bg-base-2/80'
-          >
-            Sign in
-          </button>
-          <Link
-            href='/onboarding'
-            className='rounded-xl bg-brand-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-brand-500'
-          >
-            Get started
-          </Link>
+          <SignedOut>
+            <SignInButton mode='modal'>
+              <button
+                type='button'
+                className='rounded-xl border border-slate-600 px-3 py-2 text-xs font-medium text-slate-200 transition hover:bg-base-2/80'
+              >
+                Sign in
+              </button>
+            </SignInButton>
+            <SignUpButton mode='modal'>
+              <button
+                type='button'
+                className='rounded-xl bg-brand-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-brand-500'
+              >
+                Get started
+              </button>
+            </SignUpButton>
+          </SignedOut>
+
+          <SignedIn>
+            <Link
+              href='/onboarding'
+              className='rounded-xl border border-slate-600 px-3 py-2 text-xs font-medium text-slate-100 transition hover:bg-base-2/80'
+            >
+              Get started
+            </Link>
+            <UserButton afterSignOutUrl='/' />
+          </SignedIn>
         </div>
       </div>
     </header>

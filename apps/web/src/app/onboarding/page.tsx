@@ -1,5 +1,6 @@
 'use client'
 
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -9,16 +10,17 @@ import { StateError } from '@/components/StateError'
 import { ingestProfile } from '@/lib/api'
 
 export default function OnboardingPage() {
+  const { isLoaded, user } = useUser()
   const router = useRouter()
-  const [userId, setUserId] = useState('demo-user-1')
   const [resumeText, setResumeText] = useState('')
   const [linkedinUrl, setLinkedinUrl] = useState('')
   const [targetRole, setTargetRole] = useState('Software Engineer')
   const [location, setLocation] = useState('Remote')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const userId = user?.id ?? ''
 
-  const canSubmit = Boolean(userId.trim()) && Boolean(resumeText.trim() || linkedinUrl.trim())
+  const canSubmit = Boolean(userId) && Boolean(resumeText.trim() || linkedinUrl.trim())
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -32,7 +34,11 @@ export default function OnboardingPage() {
       setIsSubmitting(true)
       setError(null)
 
-      const response = await ingestProfile({
+      if (!userId) {
+        throw new Error('You must be signed in to continue.')
+      }
+
+      await ingestProfile({
         userId,
         resumeText,
         linkedinUrl: linkedinUrl || undefined,
@@ -40,7 +46,7 @@ export default function OnboardingPage() {
         location,
       })
 
-      router.push(`/recommendations?userId=${encodeURIComponent(response.userId)}`)
+      router.push('/recommendations')
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Unable to analyze profile right now.')
     } finally {
@@ -56,21 +62,12 @@ export default function OnboardingPage() {
         <p className='mt-3 text-sm text-slate-300'>
           Add your resume details and target preferences. We’ll use this to generate relevant job matches.
         </p>
+        {isLoaded && user ? (
+          <p className='mt-2 text-xs text-slate-400'>Signed in as {user.primaryEmailAddress?.emailAddress ?? user.id}</p>
+        ) : null}
       </header>
 
       <form onSubmit={handleSubmit} className='space-y-6 rounded-2xl border border-slate-700/70 bg-slate-900/60 p-6'>
-        <div className='space-y-3'>
-          <label htmlFor='userId' className='block text-sm font-medium text-slate-100'>
-            User ID (for demo)
-          </label>
-          <input
-            id='userId'
-            value={userId}
-            onChange={(event) => setUserId(event.target.value)}
-            className='w-full rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/40'
-          />
-        </div>
-
         <ResumeUpload value={resumeText} onChange={setResumeText} />
         <LinkedInInput value={linkedinUrl} onChange={setLinkedinUrl} />
 
@@ -104,7 +101,7 @@ export default function OnboardingPage() {
 
         <button
           type='submit'
-          disabled={!canSubmit || isSubmitting}
+          disabled={!canSubmit || isSubmitting || !isLoaded}
           className='w-full rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:bg-slate-600'
         >
           {isSubmitting ? 'Analyzing profile…' : 'Analyze my profile'}

@@ -5,10 +5,9 @@ import type { Recommendation } from '@/lib/types'
 
 interface RecommendationCardProps {
   recommendation: Recommendation
-  userId: string
 }
 
-export function RecommendationCard({ recommendation, userId }: RecommendationCardProps) {
+export function RecommendationCard({ recommendation }: RecommendationCardProps) {
   const job = recommendation.job
   const visibleReasons = recommendation.reasons.slice(0, 3)
   const hiddenReasonCount = Math.max(0, recommendation.reasons.length - visibleReasons.length)
@@ -64,7 +63,7 @@ export function RecommendationCard({ recommendation, userId }: RecommendationCar
 
       <div className='mt-5 flex flex-wrap gap-3'>
         <Link
-          href={`/recommendations/${recommendation.jobId}?userId=${encodeURIComponent(userId)}`}
+          href={`/recommendations/${recommendation.jobId}`}
           className='rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-500'
         >
           Tailor resume

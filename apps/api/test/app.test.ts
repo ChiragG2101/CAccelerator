@@ -47,3 +47,23 @@ test('POST /discovery/plan validates required role field', async () => {
   assert.equal(response.status, 400)
   assert.equal(typeof response.body.error, 'object')
 })
+
+test('POST /discovery/run surfaces Hermes-Linkup execution status', async () => {
+  const response = await request(createApp()).post('/discovery/run').send({
+    role: 'Software Engineer',
+    location: 'Remote',
+  })
+
+  assert.ok([202, 502].includes(response.status))
+  assert.equal(response.body.harness, 'hermes-linkup')
+})
+
+test('POST /ingest/profile/linkup validates URL input', async () => {
+  const response = await request(createApp()).post('/ingest/profile/linkup').send({
+    userId: 'demo-user-1',
+    linkedinUrl: 'not-a-url',
+  })
+
+  assert.equal(response.status, 400)
+  assert.equal(typeof response.body.error, 'object')
+})

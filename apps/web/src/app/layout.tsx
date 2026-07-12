@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { ClerkProvider } from '@clerk/nextjs'
 import { Inter } from 'next/font/google'
 
 import { NavBar } from '@/components/NavBar'
@@ -22,8 +23,10 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body className={`${inter.variable} min-h-screen bg-base-0 text-slate-100`}>
-        <NavBar />
-        {children}
+        <ClerkProvider>
+          <NavBar />
+          {children}
+        </ClerkProvider>
       </body>
     </html>
   )

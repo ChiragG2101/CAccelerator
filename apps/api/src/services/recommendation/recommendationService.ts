@@ -18,7 +18,7 @@ export class RecommendationService {
 
     const baseProfile: DummyParsedProfile = {
       ...defaultParsedProfile,
-      ...profile,
+      ...omitUndefined(profile),
     }
 
     const seeded = buildRecommendations(userId)
@@ -58,4 +58,12 @@ function uniqueBy<T>(rows: T[], keyFn: (row: T) => string): T[] {
 function appendProfileReasons(reasons: string[], profile: DummyParsedProfile): string[] {
   const extras = [`Target role: ${profile.targetRole}`, `Preferred location: ${profile.targetLocation}`]
   return [...new Set([...reasons, ...extras])]
+}
+
+function omitUndefined<T extends object>(value?: Partial<T>): Partial<T> {
+  if (!value) {
+    return {}
+  }
+
+  return Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== undefined)) as Partial<T>
 }

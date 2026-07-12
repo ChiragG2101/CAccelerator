@@ -9,11 +9,10 @@ import { StateEmpty } from '@/components/StateEmpty'
 import type { Recommendation } from '@/lib/types'
 
 interface RecommendationsClientProps {
-  userId: string
   recommendations: Recommendation[]
 }
 
-export function RecommendationsClient({ userId, recommendations }: RecommendationsClientProps) {
+export function RecommendationsClient({ recommendations }: RecommendationsClientProps) {
   const [keyword, setKeyword] = useState('')
   const [location, setLocation] = useState('All locations')
   const [mode, setMode] = useState('All modes')
@@ -78,7 +77,7 @@ export function RecommendationsClient({ userId, recommendations }: Recommendatio
       <header className='mb-8 flex flex-wrap items-start justify-between gap-4'>
         <div>
           <p className='text-xs font-semibold uppercase tracking-wide text-brand-200'>Step 2 of 3</p>
-          <h1 className='mt-2 text-3xl font-semibold tracking-tight text-slate-50'>Top recommendations for {userId}</h1>
+          <h1 className='mt-2 text-3xl font-semibold tracking-tight text-slate-50'>Top recommendations for your profile</h1>
           <p className='mt-2 text-sm text-slate-300'>Filter by relevance, location, and work mode. Matches are ranked transparently.</p>
         </div>
         <Link
@@ -134,7 +133,7 @@ export function RecommendationsClient({ userId, recommendations }: Recommendatio
       ) : (
         <section className='mt-4 grid gap-4'>
           {filteredRecommendations.map((recommendation) => (
-            <RecommendationCard key={recommendation.id} recommendation={recommendation} userId={userId} />
+            <RecommendationCard key={recommendation.id} recommendation={recommendation} />
           ))}
         </section>
       )}

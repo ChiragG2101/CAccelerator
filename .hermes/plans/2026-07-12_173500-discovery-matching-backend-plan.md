@@ -101,6 +101,7 @@ Goal: discover openings that are poorly marketed or not visible on mainstream ag
 ### B) Matching pipeline (profile -> ranked jobs)
 1. Profile feature build
    - Input: resume text, LinkedIn URL (if available), user meta (target role/location/mode).
+   - Scrape LinkedIn/profile URLs through Linkup `fetch_webpage` (Hermes-governed harness) before feature extraction.
    - Output profile vector:
      - skill taxonomy tags
      - years/seniority band

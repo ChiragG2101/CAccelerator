@@ -48,7 +48,7 @@ export function RecommendationDetailClient({ userId, job }: RecommendationDetail
           <h1 className='mt-2 text-3xl font-semibold tracking-tight text-slate-50'>Role details and resume tailoring</h1>
         </div>
         <Link
-          href={`/recommendations?userId=${encodeURIComponent(userId)}`}
+          href='/recommendations'
           className='rounded-xl border border-slate-600 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-800/70'
         >
           Back to recommendations

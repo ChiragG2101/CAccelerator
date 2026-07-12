@@ -64,7 +64,7 @@ export default function HomePage() {
             Get matched jobs
           </Link>
           <Link
-            href='/recommendations?userId=demo-user-1'
+            href='/recommendations'
             className='rounded-xl border border-slate-600 px-5 py-3 text-sm font-medium text-slate-100 transition hover:bg-slate-800/70'
           >
             View demo recommendations
@@ -91,7 +91,7 @@ export default function HomePage() {
             <h2 className='mt-2 text-2xl font-semibold text-slate-50 md:text-3xl'>High-quality roles picked for relevance</h2>
           </div>
           <Link
-            href='/recommendations?userId=demo-user-1'
+            href='/recommendations'
             className='rounded-xl border border-slate-600 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-base-2/80'
           >
             Browse all
