@@ -20,15 +20,13 @@ export function RecommendationsClient({ userId, recommendations }: Recommendatio
   const [sortBy, setSortBy] = useState('match')
 
   const locationOptions = useMemo<string[]>(() => {
-    const values = recommendations.map((item) => item.job?.location).filter((value): value is string => typeof value === 'string')
+    const values = recommendations.flatMap((item) => (item.job?.location ? [item.job.location] : []))
     const uniqueValues = Array.from(new Set(values))
     return ['All locations', ...uniqueValues]
   }, [recommendations])
 
   const modeOptions = useMemo<string[]>(() => {
-    const values = recommendations
-      .map((item) => item.job?.mode)
-      .filter((value): value is 'Remote' | 'Hybrid' | 'Onsite' => typeof value === 'string')
+    const values = recommendations.flatMap((item) => (item.job?.mode ? [item.job.mode] : []))
     const uniqueValues = Array.from(new Set(values))
     return ['All modes', ...uniqueValues]
   }, [recommendations])
