@@ -19,11 +19,11 @@ export interface LinkupClient {
 
 export class HttpLinkupClient implements LinkupClient {
   async searchResults(input: { query: string }): Promise<LinkupSearchResult[]> {
-    const response = await fetch(`${env.LINKUP_BASE_URL}/search/results`, {
+    const response = (await fetch(`${env.LINKUP_BASE_URL}/search/results`, {
       method: 'POST',
       headers: this.buildHeaders(),
       body: JSON.stringify({ query: input.query }),
-    })
+    })) as globalThis.Response
 
     if (!response.ok) {
       throw new Error(`Linkup search failed: ${response.status} ${response.statusText}`)
@@ -52,11 +52,11 @@ export class HttpLinkupClient implements LinkupClient {
 
     for (const endpoint of endpoints) {
       try {
-        const response = await fetch(`${env.LINKUP_BASE_URL}${endpoint}`, {
+        const response = (await fetch(`${env.LINKUP_BASE_URL}${endpoint}`, {
           method: 'POST',
           headers: this.buildHeaders(),
           body: JSON.stringify({ url: input.url }),
-        })
+        })) as globalThis.Response
 
         if (!response.ok) {
           lastError = new Error(`Linkup fetch failed: ${response.status} ${response.statusText}`)

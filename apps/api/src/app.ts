@@ -20,7 +20,8 @@ export function createApp() {
     ...configuredOrigins,
   ])
 
-  app.use(helmet())
+  const helmetMiddleware = helmet as unknown as () => express.RequestHandler
+  app.use(helmetMiddleware())
   app.use(
     cors({
       origin: (origin, callback) => {
