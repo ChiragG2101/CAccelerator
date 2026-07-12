@@ -52,3 +52,7 @@ function isLocalhostOrigin(origin: string): boolean {
     return false
   }
 }
+
+const app = createApp()
+
+export default app
