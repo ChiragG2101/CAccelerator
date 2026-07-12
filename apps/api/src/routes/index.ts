@@ -9,6 +9,7 @@ import {
 } from '../data/dummyCareerData.js'
 import { InMemoryJobOpeningRepository } from '../repositories/jobOpeningRepository.js'
 import { InMemoryRecommendationRepository } from '../repositories/recommendationRepository.js'
+import { UserRepository } from '../repositories/userRepository.js'
 import { DiscoveryService } from '../services/discovery/discoveryService.js'
 import { HttpLinkupClient } from '../services/discovery/linkupClient.js'
 import { RecommendationService } from '../services/recommendation/recommendationService.js'
@@ -17,6 +18,7 @@ const router = Router()
 
 const jobsRepository = new InMemoryJobOpeningRepository()
 const recommendationRepository = new InMemoryRecommendationRepository()
+const userRepository = new UserRepository()
 const linkupClient = new HttpLinkupClient()
 const recommendationService = new RecommendationService(jobsRepository, recommendationRepository)
 const discoveryService = new DiscoveryService(jobsRepository, linkupClient)
@@ -28,6 +30,8 @@ const events: Array<{ userId: string; type: string; metadata?: Record<string, un
 
 const ingestSchema = z.object({
   userId: z.string().min(2).default('demo-user-1'),
+  email: z.string().email().optional(),
+  username: z.string().min(1).optional(),
   resumeText: z.string().optional(),
   linkedinUrl: z.string().optional(),
   manualSummary: z.string().optional(),
@@ -81,6 +85,8 @@ const discoveryRunSchema = discoveryPlanSchema.extend({
 
 const linkupProfileSchema = z.object({
   userId: z.string().min(2).default('demo-user-1'),
+  email: z.string().email().optional(),
+  username: z.string().min(1).optional(),
   linkedinUrl: z.string().url(),
   targetRole: z.string().optional(),
   location: z.string().optional(),
@@ -158,7 +164,7 @@ router.post('/discovery/run', async (req, res) => {
   }
 })
 
-router.post('/ingest/profile', (req, res) => {
+router.post('/ingest/profile', async (req, res) => {
   const parsed = ingestSchema.safeParse(req.body)
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.flatten() })
@@ -174,9 +180,16 @@ router.post('/ingest/profile', (req, res) => {
   }
 
   ingestedProfiles.set(payload.userId, profile)
+  const userRecord = await userRepository.upsert({
+    clerkUserId: payload.userId,
+    email: payload.email,
+    username: payload.username,
+    linkedinUrl: payload.linkedinUrl,
+  })
 
   res.status(201).json({
     userId: payload.userId,
+    user: userRecord,
     parsedProfile: profile,
     profileCompleteness: profile.resumeText || profile.linkedinUrl ? 0.86 : 0.62,
     source: 'dummy',
@@ -206,9 +219,16 @@ router.post('/ingest/profile/linkup', async (req, res) => {
     }
 
     ingestedProfiles.set(payload.userId, profile)
+    const userRecord = await userRepository.upsert({
+      clerkUserId: payload.userId,
+      email: payload.email,
+      username: payload.username,
+      linkedinUrl: payload.linkedinUrl,
+    })
 
     return res.status(201).json({
       userId: payload.userId,
+      user: userRecord,
       parsedProfile: profile,
       profileCompleteness: profile.skills.length > 0 ? 0.9 : 0.7,
       source: 'linkup',
@@ -222,6 +242,16 @@ router.post('/ingest/profile/linkup', async (req, res) => {
       error: message,
     })
   }
+})
+
+router.get('/users/:userId', async (req, res) => {
+  const user = await userRepository.getByClerkUserId(req.params.userId)
+
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' })
+  }
+
+  res.json({ user, source: 'in-memory-foundation' })
 })
 
 router.get('/recommendations/:userId', async (req, res) => {

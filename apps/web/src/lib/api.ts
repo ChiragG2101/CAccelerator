@@ -17,6 +17,8 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
 
 export interface IngestProfilePayload {
   userId: string
+  email?: string
+  username?: string
   resumeText?: string
   linkedinUrl?: string
   manualSummary?: string
